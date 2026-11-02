@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARRAYS.exe — Cyber Academia POO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   RESET & VARIABLES
+============================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #04040a;
+  --bg-2: #0a0a16;
+  --bg-3: #12101f;
+  --cyan: #00fff9;
+  --magenta: #ff006e;
+  --yellow: #f9f002;
+  --green: #39ff14;
+  --purple: #b026ff;
+  --orange: #ff6b1a;
+  --text: #e4e4f4;
+  --dim: #6a6a8a;
+  --line: rgba(0, 255, 249, 0.15);
+  --glow-cyan: 0 0 8px rgba(0, 255, 249, 0.6), 0 0 24px rgba(0, 255, 249, 0.3);
+  --glow-magenta: 0 0 8px rgba(255, 0, 110, 0.6), 0 0 24px rgba(255, 0, 110, 0.3);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+  font-size: 17px;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ============================================
+   BACKGROUND GRID + SCANLINES
+============================================ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 255, 249, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 249, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.4;
+  animation: scan 8s linear infinite;
+}
+
+@keyframes scan {
+  from { transform: translateY(0); }
+  to { transform: translateY(3px); }
+}
+
+/* Mouse glow */
+#mouse-glow {
+  position: fixed;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,255,249,0.10) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+body:hover #mouse-glow { opacity: 1; }
+
+/* ============================================
+   NAVIGATION
+============================================ */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  padding: 14px 32px;
+  background: rgba(4, 4, 10, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.nav-brand {
+  color: var(--cyan);
+  text-shadow: var(--glow-cyan);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-brand::before {
+  content: '◉';
+  color: var(--magenta);
+  animation: pulse-dot 1.5s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; text-shadow: var(--glow-magenta); }
+  50% { opacity: 0.3; }
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--dim);
+  text-decoration: none;
+  transition: all 0.3s;
+  position: relative;
+}
+.nav-links a:hover {
+  color: var(--cyan);
+  text-shadow: var(--glow-cyan);
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+  transition: width 0.3s;
+}
+.nav-links a:hover::after { width: 100%; }
+
+@media (max-width: 860px) {
+  .nav-links { display: none; }
+}
+
+/* ============================================
+   HERO
+============================================ */
+#hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 24px 60px;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.hero-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: var(--magenta);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  border: 1px solid var(--magenta);
+  padding: 6px 16px;
+  margin-bottom: 32px;
+  box-shadow: var(--glow-magenta);
+  animation: flicker 4s infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.4; }
+  94% { opacity: 1; }
+  96% { opacity: 0.6; }
+  97% { opacity: 1; }
+}
+
+.glitch-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: clamp(52px, 12vw, 140px);
+  letter-spacing: 6px;
+  line-height: 0.9;
+  color: var(--cyan);
+  text-shadow: 0 0 20px rgba(0, 255, 249, 0.8), 0 0 40px rgba(0, 255, 249, 0.4);
+  position: relative;
+  display: inline-block;
+}
+
+.glitch-title::before,
+.glitch-title::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+}
+.glitch-title::before {
+  color: var(--magenta);
+  animation: glitch-1 3s infinite linear alternate-reverse;
+  clip-path: inset(0 0 60% 0);
+  z-index: -1;
+}
+.glitch-title::after {
+  color: var(--green);
+  animation: glitch-2 2.5s infinite linear alternate-reverse;
+  clip-path: inset(50% 0 0 0);
+  z-index: -1;
+}
+
+@keyframes glitch-1 {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3px, 2px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-2px, 1px); }
+  80% { transform: translate(3px, -2px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes glitch-2 {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(2px, -2px); }
+  50% { transform: translate(-3px, 1px); }
+  75% { transform: translate(1px, 2px); }
+  100% { transform: translate(0, 0); }
+}
+
+.hero-subtitle {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--dim);
+  font-size: clamp(12px, 2vw, 16px);
+  letter-spacing: 3px;
+  margin-top: 32px;
+  text-transform: uppercase;
+}
+
+.hero-subtitle .hl { color: var(--yellow); text-shadow: 0 0 8px var(--yellow); }
+.hero-subtitle .hl-2 { color: var(--magenta); text-shadow: var(--glow-magenta); }
+
+.hero-terminal {
+  margin-top: 48px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  background: rgba(10, 10, 22, 0.8);
+  border: 1px solid var(--line);
+  padding: 20px 28px;
+  text-align: left;
+  max-width: 560px;
+  width: 100%;
+  position: relative;
+  border-radius: 2px;
+}
+
+.hero-terminal::before {
+  content: '■ ■ ■';
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: var(--bg);
+  padding: 0 8px;
+  color: var(--magenta);
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.hero-terminal .line { margin: 3px 0; }
+.hero-terminal .prompt { color: var(--green); }
+.hero-terminal .cmd { color: var(--cyan); }
+.hero-terminal .out { color: var(--dim); }
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  animation: bob 2s ease-in-out infinite;
+}
+.scroll-indicator::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 30px;
+  background: var(--cyan);
+  margin: 8px auto 0;
+  box-shadow: var(--glow-cyan);
+}
+@keyframes bob {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, 8px); }
+}
+
+/* ============================================
+   SECTION LAYOUT
+============================================ */
+section {
+  padding: 100px 32px;
+  max-width: 1240px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.section-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--magenta);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-tag::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 2px;
+  background: var(--magenta);
+  box-shadow: var(--glow-magenta);
+}
+
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 4.5vw, 44px);
+  letter-spacing: 2px;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.1;
+}
+.section-title .hl { color: var(--cyan); text-shadow: var(--glow-cyan); }
+
+.section-desc {
+  color: var(--dim);
+  max-width: 700px;
+  margin-bottom: 56px;
+  font-size: 17px;
+}
+
+/* Reveal animation */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   DEFINITION CARD
+============================================ */
+.def-card {
+  background: linear-gradient(135deg, rgba(0, 255, 249, 0.04), rgba(176, 38, 255, 0.04));
+  border: 1px solid var(--line);
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.def-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+}
+.def-card blockquote {
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text);
+}
+.def-card blockquote .kw {
+  color: var(--cyan);
+  font-family: 'Share Tech Mono', monospace;
+  font-weight: 600;
+}
+.def-card blockquote .kw-m {
+  color: var(--magenta);
+  font-family: 'Share Tech Mono', monospace;
+  font-weight: 600;
+}
+.def-math {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 15px;
+  color: var(--yellow);
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: rgba(249, 240, 2, 0.05);
+  border: 1px dashed rgba(249, 240, 2, 0.3);
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* ============================================
+   CARACTERÍSTICAS GRID
+============================================ */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.feature-card {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  padding: 28px 24px;
+  position: relative;
+  transition: all 0.4s;
+  cursor: default;
+  overflow: hidden;
+}
+.feature-card:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 20px rgba(0, 255, 249, 0.2), inset 0 0 20px rgba(0, 255, 249, 0.05);
+  transform: translateY(-4px);
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.feature-card:hover::before { opacity: 1; }
+
+.feature-icon {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--cyan);
+  font-size: 28px;
+  margin-bottom: 12px;
+  text-shadow: var(--glow-cyan);
+}
+
+.feature-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: var(--text);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.feature-desc {
+  font-size: 15px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+/* ============================================
+   MEMORY VISUALIZER
+============================================ */
+.memory-panel {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  padding: 32px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.memory-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+.memory-header .chip {
+  background: rgba(0, 255, 249, 0.08);
+  border: 1px solid var(--line);
+  padding: 6px 14px;
+  color: var(--cyan);
+  letter-spacing: 1px;
+}
+.memory-header .chip .v { color: var(--yellow); }
+
+.mem-array {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.mem-cell {
+  flex: 1;
+  min-width: 60px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  padding: 10px 4px 6px;
+  text-align: center;
+  transition: all 0.25s;
+  position: relative;
+  cursor: pointer;
+}
+.mem-cell .val {
+  font-size: 15px;
+  color: var(--text);
+  font-weight: bold;
+  display: block;
+}
+.mem-cell .addr {
+  font-size: 9px;
+  color: var(--dim);
+  display: block;
+  margin-top: 4px;
+  letter-spacing: 0;
+}
+.mem-cell .idx {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg);
+  color: var(--magenta);
+  font-size: 10px;
+  padding: 0 6px;
+  font-weight: bold;
+}
+.mem-cell:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0, 255, 249, 0.4), inset 0 0 8px rgba(0, 255, 249, 0.1);
+  transform: translateY(-2px);
+}
+.mem-cell:hover .val { color: var(--cyan); text-shadow: var(--glow-cyan); }
+.mem-cell.active {
+  border-color: var(--yellow);
+  box-shadow: 0 0 15px rgba(249, 240, 2, 0.5), inset 0 0 10px rgba(249, 240, 2, 0.15);
+}
+.mem-cell.active .val { color: var(--yellow); text-shadow: 0 0 8px var(--yellow); }
+.mem-cell.active .idx { color: var(--yellow); }
+
+.mem-readout {
+  font-size: 13px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(0, 255, 249, 0.03);
+  border-left: 2px solid var(--cyan);
+}
+.mem-readout .k { color: var(--dim); }
+.mem-readout .v { color: var(--cyan); }
+.mem-readout .err { color: var(--magenta); }
+
+/* ============================================
+   OPERATIONS PLAYGROUND
+============================================ */
+.ops-panel {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  padding: 32px;
+}
+
+.ops-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--cyan);
+  border: 1px solid var(--cyan);
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+}
+.btn:hover {
+  background: var(--cyan);
+  color: var(--bg);
+  box-shadow: var(--glow-cyan);
+}
+.btn.magenta {
+  color: var(--magenta);
+  border-color: var(--magenta);
+}
+.btn.magenta:hover {
+  background: var(--magenta);
+  color: var(--bg);
+  box-shadow: var(--glow-magenta);
+}
+.btn.yellow {
+  color: var(--yellow);
+  border-color: var(--yellow);
+}
+.btn.yellow:hover {
+  background: var(--yellow);
+  color: var(--bg);
+  box-shadow: 0 0 8px var(--yellow), 0 0 24px rgba(249, 240, 2, 0.4);
+}
+
+.ops-input {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  padding: 10px 14px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  color: var(--text);
+  width: 100px;
+  outline: none;
+  transition: all 0.25s;
+}
+.ops-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px rgba(0, 255, 249, 0.3);
+}
+
+.ops-display {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 20px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  min-height: 80px;
+  margin-bottom: 20px;
+  position: relative;
+}
+.ops-display::before {
+  content: 'ARRAY[]';
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  background: var(--bg-2);
+  padding: 0 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--magenta);
+  letter-spacing: 2px;
+}
+
+.ops-cell {
+  min-width: 56px;
+  height: 56px;
+  background: var(--bg);
+  border: 1px solid var(--cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 16px;
+  color: var(--cyan);
+  position: relative;
+  animation: pop-in 0.4s ease;
+}
+.ops-cell::before {
+  content: attr(data-idx);
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: var(--magenta);
+  background: var(--bg-3);
+  padding: 0 4px;
+}
+.ops-cell.highlight {
+  border-color: var(--yellow);
+  color: var(--yellow);
+  box-shadow: 0 0 15px rgba(249, 240, 2, 0.5);
+  animation: pulse-cell 1s ease;
+}
+@keyframes pop-in {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes pulse-cell {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.ops-log {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 14px 18px;
+  max-height: 140px;
+  overflow-y: auto;
+  color: var(--dim);
+  letter-spacing: 0.5px;
+}
+.ops-log .entry { padding: 2px 0; }
+.ops-log .entry.ok { color: var(--green); }
+.ops-log .entry.err { color: var(--magenta); }
+.ops-log .entry.info { color: var(--cyan); }
+.ops-log .entry::before { content: '› '; color: var(--dim); }
+
+/* ============================================
+   LIMITATIONS
+============================================ */
+.limit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.limit-card {
+  background: rgba(255, 0, 110, 0.04);
+  border: 1px solid rgba(255, 0, 110, 0.25);
+  padding: 24px;
+  position: relative;
+}
+.limit-card::before {
+  content: '⚠';
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  color: var(--magenta);
+  font-size: 20px;
+  text-shadow: var(--glow-magenta);
+}
+.limit-card h4 {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--magenta);
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-right: 30px;
+}
+.limit-card p {
+  font-size: 15px;
+  color: var(--dim);
+}
+.limit-card p .code {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--yellow);
+  background: rgba(249, 240, 2, 0.06);
+  padding: 1px 6px;
+}
+
+/* ============================================
+   POO SOLUTION
+============================================ */
+.poo-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .poo-wrap { grid-template-columns: 1fr; }
+}
+
+.poo-principles {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.poo-principles li {
+  padding: 16px 20px;
+  background: var(--bg-2);
+  border-left: 3px solid var(--purple);
+  transition: all 0.3s;
+}
+.poo-principles li:hover {
+  border-left-color: var(--cyan);
+  transform: translateX(6px);
+  box-shadow: -4px 0 15px rgba(0, 255, 249, 0.15);
+}
+.poo-principles .p-title {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--purple);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  transition: color 0.3s;
+}
+.poo-principles li:hover .p-title { color: var(--cyan); }
+.poo-principles .p-desc { color: var(--dim); font-size: 15px; }
+
+.class-diagram {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  padding: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  position: relative;
+  overflow: hidden;
+}
+.class-diagram::before {
+  content: 'CLASS DIAGRAM';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  background: var(--bg);
+  color: var(--magenta);
+  padding: 0 8px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  z-index: 2;
+}
+.class-diagram .cd-header {
+  padding: 20px 20px 14px;
+  background: rgba(0, 255, 249, 0.05);
+  border-bottom: 1px solid var(--line);
+  color: var(--cyan);
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.class-diagram .cd-header .kw {
+  color: var(--purple);
+}
+.class-diagram .cd-body {
+  padding: 16px 20px;
+}
+.class-diagram .cd-attr, .class-diagram .cd-method {
+  padding: 4px 0;
+  color: var(--text);
+}
+.class-diagram .cd-attr .vis, .class-diagram .cd-method .vis {
+  color: var(--magenta);
+  display: inline-block;
+  width: 18px;
+}
+.class-diagram .cd-attr .type, .class-diagram .cd-method .type {
+  color: var(--yellow);
+}
+.class-diagram .cd-method .name { color: var(--green); }
+.class-diagram .cd-sep {
+  text-align: center;
+  color: var(--dim);
+  font-size: 10px;
+  letter-spacing: 4px;
+  padding: 4px 0;
+}
+
+/* ============================================
+   CODE BLOCK
+============================================ */
+.code-wrapper {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  position: relative;
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(0, 255, 249, 0.04);
+  border-bottom: 1px solid var(--line);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+}
+.code-header .dots {
+  display: flex;
+  gap: 6px;
+  color: var(--dim);
+}
+.code-header .dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--dim);
+}
+.code-header .dots span:nth-child(1) { background: var(--magenta); }
+.code-header .dots span:nth-child(2) { background: var(--yellow); }
+.code-header .dots span:nth-child(3) { background: var(--green); }
+.code-header .filename {
+  color: var(--cyan);
+  letter-spacing: 1px;
+}
+.code-header .lang {
+  color: var(--dim);
+  letter-spacing: 2px;
+  font-size: 11px;
+}
+
+pre {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  padding: 20px 24px;
+  overflow-x: auto;
+  color: var(--text);
+  background: transparent;
+}
+pre code { white-space: pre; }
+.kw { color: var(--magenta); }
+.cls { color: var(--yellow); }
+.str { color: var(--green); }
+.num { color: var(--orange); }
+.cmt { color: var(--dim); font-style: italic; }
+.anno { color: var(--purple); }
+.fn { color: var(--cyan); }
+
+/* ============================================
+   LABORATORIO INTERACTIVO
+============================================ */
+.lab {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  padding: 32px;
+}
+
+.lab-state {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.lab-state-item {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 14px 18px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+}
+.lab-state-item .label {
+  color: var(--magenta);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.lab-state-item .value {
+  color: var(--yellow);
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.lab-array {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 20px 20px 24px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  margin-bottom: 20px;
+  position: relative;
+}
+.lab-array::before {
+  content: 'elementos[]';
+  position: absolute;
+  top: -9px;
+  left: 14px;
+  background: var(--bg-2);
+  padding: 0 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--magenta);
+  letter-spacing: 2px;
+}
+
+.lab-cell {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  background: var(--bg-3);
+  color: var(--dim);
+  position: relative;
+  transition: all 0.3s;
+}
+.lab-cell.occupied {
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: inset 0 0 10px rgba(57, 255, 20, 0.1);
+}
+.lab-cell.occupied::after {
+  content: '●';
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 6px;
+  color: var(--green);
+}
+.lab-cell.new-cell {
+  animation: flash-in 0.5s ease;
+}
+@keyframes flash-in {
+  0% { border-color: var(--yellow); box-shadow: 0 0 20px var(--yellow); transform: scale(1.2); }
+  100% { border-color: var(--green); }
+}
+.lab-cell::before {
+  content: attr(data-idx);
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: var(--dim);
+}
+
+.lab-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.lab-controls .btn { font-size: 12px; padding: 8px 16px; }
+
+/* ============================================
+   QUIZ
+============================================ */
+.quiz-card {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  padding: 32px;
+  margin-bottom: 20px;
+}
+.quiz-q {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 17px;
+  letter-spacing: 1px;
+  color: var(--cyan);
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(0, 255, 249, 0.3);
+}
+.quiz-q .n {
+  color: var(--magenta);
+  margin-right: 10px;
+}
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.quiz-opt {
+  padding: 14px 18px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  transition: all 0.25s;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+.quiz-opt:hover {
+  border-color: var(--cyan);
+  background: rgba(0, 255, 249, 0.04);
+}
+.quiz-opt .letter {
+  color: var(--magenta);
+  font-weight: bold;
+  min-width: 20px;
+}
+.quiz-opt.correct {
+  border-color: var(--green);
+  background: rgba(57, 255, 20, 0.08);
+  color: var(--green);
+}
+.quiz-opt.correct .letter { color: var(--green); }
+.quiz-opt.incorrect {
+  border-color: var(--magenta);
+  background: rgba(255, 0, 110, 0.08);
+  color: var(--magenta);
+}
+.quiz-opt.incorrect .letter { color: var(--magenta); }
+.quiz-opt:disabled { cursor: default; }
+
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  display: none;
+  border-left: 3px solid;
+}
+.quiz-feedback.show { display: block; animation: fade-in 0.4s ease; }
+.quiz-feedback.ok { color: var(--green); border-color: var(--green); background: rgba(57, 255, 20, 0.06); }
+.quiz-feedback.ko { color: var(--magenta); border-color: var(--magenta); background: rgba(255, 0, 110, 0.06); }
+@keyframes fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============================================
+   FOOTER
+============================================ */
+footer {
+  padding: 60px 32px 40px;
+  text-align: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 2px;
+  border-top: 1px solid var(--line);
+  margin-top: 80px;
+  position: relative;
+  z-index: 2;
+}
+footer .sig {
+  color: var(--cyan);
+  text-shadow: var(--glow-cyan);
+  letter-spacing: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+footer .blink { animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Progress bar */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--yellow));
+  z-index: 999;
+  transition: width 0.1s;
+  box-shadow: 0 0 10px var(--cyan);
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div id="mouse-glow"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">ARRAYS.exe</div>
+  <ul class="nav-links">
+    <li><a href="#definicion">Definición</a></li>
+    <li><a href="#memoria">Memoria</a></li>
+    <li><a href="#operaciones">Operaciones</a></li>
+    <li><a href="#poo">POO</a></li>
+    <li><a href="#laboratorio">Laboratorio</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<header id="hero">
+  <div class="hero-badge">Cyber Academia · Estructuras de Datos</div>
+  <h1 class="glitch-title" data-text="ARRAYS">ARRAYS</h1>
+  <p class="hero-subtitle">
+    <span class="hl">FUNDAMENTOS</span> ·
+    <span class="hl-2">POO</span> ·
+    <span class="hl">ENCAPSULAMIENTO</span>
+  </p>
+
+  <div class="hero-terminal">
+    <div class="line"><span class="prompt">$</span> <span class="cmd">iniciar_sistema arrays.exe --modo=didactico</span></div>
+    <div class="line"><span class="out">[OK] Cargando módulo de estructuras de datos...</span></div>
+    <div class="line"><span class="out">[OK] Inicializando paradigma orientado a objetos...</span></div>
+    <div class="line"><span class="out">[OK] Conectando con la Cyber Academia...</span></div>
+    <div class="line"><span class="out">&gt; Bienvenido, aprendiz de código.</span></div>
+    <div class="line"><span class="out">&gt; Desplázate para comenzar la transmisión_<span class="blink" style="color:var(--cyan);">█</span></span></div>
+  </div>
+
+  <div class="scroll-indicator">SCROLL</div>
+</header>
+
+<!-- 01 DEFINICIÓN -->
+<section id="definicion" class="reveal">
+  <div class="section-tag">// SECCIÓN 01</div>
+  <h2 class="section-title">¿Qué es un <span class="hl">arreglo</span>?</h2>
+  <p class="section-desc">
+    Antes de programar, necesitamos comprender la idea. Un arreglo es mucho más que una lista:
+    es una estructura con reglas precisas sobre cómo se organiza la memoria.
+  </p>
+
+  <div class="def-card">
+    <blockquote>
+      Un <span class="kw">arreglo</span> es una colección <span class="kw-m">finita</span>,
+      <span class="kw-m">homogénea</span> y <span class="kw-m">ordenada</span> de elementos
+      del mismo tipo. Cada elemento ocupa una posición identificada por un
+      <span class="kw">índice</span> que comienza en cero.
+    </blockquote>
+    <div class="def-math">
+      A = [ a₀ , a₁ , a₂ , ... , aₙ₋₁ ]  &nbsp;|&nbsp;  índice ∈ [0, N-1]
+    </div>
+  </div>
+</section>
+
+<!-- 02 CARACTERÍSTICAS -->
+<section id="caracteristicas" class="reveal">
+  <div class="section-tag">// SECCIÓN 02</div>
+  <h2 class="section-title">Características <span class="hl">esenciales</span></h2>
+  <p class="section-desc">
+    Todo arreglo cumple un contrato de diseño. Comprenderlo es el primer paso
+    para usarlo correctamente y, después, para encapsularlo.
+  </p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">01</div>
+      <div class="feature-title">Homogeneidad</div>
+      <div class="feature-desc">Todos los elementos son del mismo tipo de dato: `int[]`, `String[]`, `Estudiante[]`…</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">02</div>
+      <div class="feature-title">Orden</div>
+      <div class="feature-desc">Los elementos están en una secuencia lineal. El índice define exactamente su posición.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">03</div>
+      <div class="feature-title">Tamaño fijo</div>
+      <div class="feature-desc">La longitud se fija al crear el arreglo. No se puede modificar después.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">04</div>
+      <div class="feature-title">Acceso O(1)</div>
+      <div class="feature-desc">El acceso por índice es constante gracias al cálculo directo de direcciones de memoria.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">05</div>
+      <div class="feature-title">Memoria contigua</div>
+      <div class="feature-desc">Los elementos se almacenan en bloque. Esto favorece la caché del procesador.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">06</div>
+      <div class="feature-title">Índice base 0</div>
+      <div class="feature-desc">El primer elemento vive en el índice `0`; el último en `N-1`. No hay índice `N`.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 MEMORIA INTERACTIVA -->
+<section id="memoria" class="reveal">
+  <div class="section-tag">// SECCIÓN 03</div>
+  <h2 class="section-title">Bajo el capó: <span class="hl">la memoria</span></h2>
+  <p class="section-desc">
+    Pasa el cursor sobre cualquier celda para ver cómo el índice se traduce en una
+    dirección física. Fórmula: <code style="color:var(--yellow);font-family:'Share Tech Mono';">dir(aᵢ) = base + i × sizeof(T)</code>
+  </p>
+
+  <div class="memory-panel">
+    <div class="memory-header">
+      <div class="chip">BASE = <span class="v" id="mem-base">0x7FFE0000</span></div>
+      <div class="chip">TIPO = <span class="v">int</span></div>
+      <div class="chip">TAMAÑO = <span class="v">4 bytes</span></div>
+      <div class="chip">LONGITUD = <span class="v">10</span></div>
+    </div>
+
+    <div class="mem-array" id="mem-array"></div>
+
+    <div class="mem-readout" id="mem-readout">
+      <span class="k">›</span> Selecciona una celda para inspeccionar su dirección de memoria...
+    </div>
+  </div>
+</section>
+
+<!-- 04 OPERACIONES -->
+<section id="operaciones" class="reveal">
+  <div class="section-tag">// SECCIÓN 04</div>
+  <h2 class="section-title">Operaciones <span class="hl">fundamentales</span></h2>
+  <p class="section-desc">
+    Un arreglo "desnudo" permite agregar, eliminar y acceder — pero con limitaciones.
+    Experimenta con el playground y observa la consola de eventos.
+  </p>
+
+  <div class="ops-panel">
+    <div class="ops-controls">
+      <input type="number" class="ops-input" id="ops-value" placeholder="valor" value="42">
+      <button class="btn" onclick="opsAppend()">+ agregar</button>
+      <button class="btn magenta" onclick="opsPop()">− quitar último</button>
+      <button class="btn yellow" onclick="opsRandom()">⟳ random</button>
+      <button class="btn" onclick="opsReset()">↺ reset</button>
+    </div>
+
+    <div class="ops-display" id="ops-display"></div>
+
+    <div class="ops-log" id="ops-log">
+      <div class="entry info">Sistema listo. Arreglo inicializado con 6 elementos.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 LIMITACIONES -->
+<section id="limitaciones" class="reveal">
+  <div class="section-tag">// SECCIÓN 05</div>
+  <h2 class="section-title">Las <span class="hl" style="color:var(--magenta);text-shadow:var(--glow-magenta);">limitaciones</span> del arreglo desnudo</h2>
+  <p class="section-desc">
+    Antes de encapsular, hay que reconocer los problemas del arreglo primitivo.
+    Estas son las razones por las cuales la POO interviene.
+  </p>
+
+  <div class="limit-grid">
+    <div class="limit-card">
+      <h4>Tamaño inmutable</h4>
+      <p>Un arreglo de <span class="code">new int[10]</span> jamás podrá contener 11 elementos. Para crecer hay que crear otro arreglo y copiar todo.</p>
+    </div>
+    <div class="limit-card">
+      <h4>Acceso inseguro</h4>
+      <p>Acceder a <span class="code">arr[10]</span> en un arreglo de longitud 10 dispara <span class="code">ArrayIndexOutOfBoundsException</span>.</p>
+    </div>
+    <div class="limit-card">
+      <h4>Sin protección</h4>
+      <p>El arreglo expone su tamaño y sus elementos a cualquiera. No hay invariantes que lo protejan.</p>
+    </div>
+    <div class="limit-card">
+      <h4>Inserción costosa</h4>
+      <p>Insertar o eliminar en medio de un arreglo obliga a desplazar <span class="code">N</span> elementos. Costo O(N).</p>
+    </div>
+    <div class="limit-card">
+      <h4>Desperdicio</h4>
+      <p>Si se sobredimensiona "por si acaso", se reserva memoria que nunca se usa.</p>
+    </div>
+    <div class="limit-card">
+      <h4>Sin semántica</h4>
+      <p>Un <span class="code">int[]</span> no sabe si representa notas, edades o precios. No hay dominio, no hay significado.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 06 POO -->
+<section id="poo" class="reveal">
+  <div class="section-tag">// SECCIÓN 06</div>
+  <h2 class="section-title">La solución: <span class="hl">encapsular en POO</span></h2>
+  <p class="section-desc">
+    La programación orientada a objetos no reemplaza a los arreglos: los envuelve.
+    Al esconder el arreglo dentro de una clase, se controla cada acceso.
+  </p>
+
+  <div class="poo-wrap">
+    <ul class="poo-principles">
+      <li>
+        <div class="p-title">Encapsulamiento</div>
+        <div class="p-desc">El arreglo pasa a ser <code>private</code>. Nadie lo toca sin pasar por los métodos.</div>
+      </li>
+      <li>
+        <div class="p-title">Composición</div>
+        <div class="p-desc">La clase <em>tiene un</em> arreglo como parte de su estado interno.</div>
+      </li>
+      <li>
+        <div class="p-title">Responsabilidad única</div>
+        <div class="p-desc">La clase gestiona la colección; el cliente solo llama a <code>agregar()</code> u <code>obtener()</code>.</div>
+      </li>
+      <li>
+        <div class="p-title">Interfaz controlada</div>
+        <div class="p-desc">Se expone lo necesario. La implementación queda oculta y puede cambiarse sin romper a los clientes.</div>
+      </li>
+    </ul>
+
+    <div class="class-diagram">
+      <div class="cd-header"><span class="kw">public class</span> <span class="fn">Coleccion&lt;T&gt;</span></div>
+      <div class="cd-body">
+        <div class="cd-attr"><span class="vis">−</span> <span class="type">T[]</span> elementos</div>
+        <div class="cd-attr"><span class="vis">−</span> <span class="type">int</span> cantidad</div>
+        <div class="cd-attr"><span class="vis">−</span> <span class="type">int</span> capacidad</div>
+        <div class="cd-sep">──────────────</div>
+        <div class="cd-method"><span class="vis">+</span> <span class="name">agregar</span>(<span class="type">T</span> e) : <span class="type">void</span></div>
+        <div class="cd-method"><span class="vis">+</span> <span class="name">obtener</span>(<span class="type">int</span> i) : <span class="type">T</span></div>
+        <div class="cd-method"><span class="vis">+</span> <span class="name">tamaño</span>() : <span class="type">int</span></div>
+        <div class="cd-method"><span class="vis">+</span> <span class="name">contiene</span>(<span class="type">T</span> e) : <span class="type">boolean</span></div>
+        <div class="cd-method"><span class="vis">−</span> <span class="name">redimensionar</span>() : <span class="type">void</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 CÓDIGO -->
+<section id="codigo" class="reveal">
+  <div class="section-tag">// SECCIÓN 07</div>
+  <h2 class="section-title">Código <span class="hl">real</span>, sin adornos</h2>
+  <p class="section-desc">
+    Este es el esqueleto clásico de una clase que encapsula un arreglo y ofrece
+    una interfaz segura. Léelo despacio: cada línea tiene una razón de ser.
+  </p>
+
+  <div class="code-wrapper">
+    <div class="code-header">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="filename">Coleccion.java</div>
+      <div class="lang">JAVA</div>
+    </div>
+    <pre><code><span class="kw">public class</span> <span class="cls">Coleccion</span>&lt;<span class="cls">T</span>&gt; {
+
+    <span class="kw">private</span> <span class="cls">T</span>[] elementos;        <span class="cmt">// arreglo encapsulado</span>
+    <span class="kw">private</span> <span class="kw">int</span> cantidad;         <span class="cmt">// elementos realmente guardados</span>
+    <span class="kw">private</span> <span class="kw">static</span> <span class="kw">final</span> <span class="kw">int</span> INICIAL = <span class="num">4</span>;
+
+    <span class="kw">public</span> <span class="fn">Coleccion</span>() {
+        elementos = (<span class="cls">T</span>[]) <span class="kw">new</span> <span class="cls">Object</span>[INICIAL];
+        cantidad  = <span class="num">0</span>;
+    }
+
+    <span class="kw">public</span> <span class="kw">void</span> <span class="fn">agregar</span>(<span class="cls">T</span> e) {
+        <span class="kw">if</span> (cantidad == elementos.length) {
+            <span class="fn">redimensionar</span>();
+        }
+        elementos[cantidad++] = e;
+    }
+
+    <span class="kw">public</span> <span class="cls">T</span> <span class="fn">obtener</span>(<span class="kw">int</span> i) {
+        <span class="kw">if</span> (i &lt; <span class="num">0</span> || i &gt;= cantidad) {
+            <span class="kw">throw</span> <span class="kw">new</span> <span class="cls">IndexOutOfBoundsException</span>(
+                <span class="str">"Índice fuera de rango: "</span> + i);
+        }
+        <span class="kw">return</span> elementos[i];
+    }
+
+    <span class="kw">public</span> <span class="kw">int</span> <span class="fn">tamaño</span>() {
+        <span class="kw">return</span> cantidad;
+    }
+
+    <span class="kw">private</span> <span class="kw">void</span> <span class="fn">redimensionar</span>() {
+        <span class="cls">T</span>[] nuevo = (<span class="cls">T</span>[]) <span class="kw">new</span> <span class="cls">Object</span>[elementos.length * <span class="num">2</span>];
+        <span class="cls">System</span>.arraycopy(elementos, <span class="num">0</span>, nuevo, <span class="num">0</span>, cantidad);
+        elementos = nuevo;
+    }
+}</code></pre>
+  </div>
+</section>
+
+<!-- 08 LABORATORIO -->
+<section id="laboratorio" class="reveal">
+  <div class="section-tag">// SECCIÓN 08</div>
+  <h2 class="section-title">Laboratorio <span class="hl">interactivo</span></h2>
+  <p class="section-desc">
+    Esta es una simulación de la clase <code style="color:var(--cyan);">Coleccion</code>.
+    Observa cómo el arreglo interno crece automáticamente cuando se llena —
+    el cliente nunca ve ese detalle.
+  </p>
+
+  <div class="lab">
+    <div class="lab-state">
+      <div class="lab-state-item">
+        <div class="label">cantidad</div>
+        <div class="value" id="lab-cantidad">0</div>
+      </div>
+      <div class="lab-state-item">
+        <div class="label">capacidad</div>
+        <div class="value" id="lab-capacidad">4</div>
+      </div>
+      <div class="lab-state-item">
+        <div class="label">invariante</div>
+        <div class="value" style="font-size:12px;color:var(--dim);" id="lab-invariante">0 ≤ cantidad ≤ 4 ✓</div>
+      </div>
+    </div>
+
+    <div class="lab-array" id="lab-array"></div>
+
+    <div class="lab-controls">
+      <input type="number" class="ops-input" id="lab-value" placeholder="valor" value="7" style="width:90px;">
+      <button class="btn" onclick="labAdd()">▸ agregar(e)</button>
+      <button class="btn magenta" onclick="labObtener()">▸ obtener(i)</button>
+      <button class="btn yellow" onclick="labReset()">↺ reset</button>
+      <span style="font-family:'Share Tech Mono';font-size:12px;color:var(--dim);margin-left:auto;">
+        índice para obtener: <input type="number" class="ops-input" id="lab-idx" value="0" style="width:70px;">
+      </span>
+    </div>
+
+    <div class="ops-log" id="lab-log" style="margin-top:16px;">
+      <div class="entry info">Coleccion&lt;T&gt; instanciada. elementos = new Object[4]; cantidad = 0</div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 QUIZ -->
+<section id="quiz" class="reveal">
+  <div class="section-tag">// SECCIÓN 09</div>
+  <h2 class="section-title">Verifica tu <span class="hl">comprensión</span></h2>
+  <p class="section-desc">
+    Tres preguntas rápidas. No hay castigo por fallar: el feedback es inmediato.
+  </p>
+
+  <div class="quiz-card">
+    <div class="quiz-q"><span class="n">Q1.</span> ¿Cuál es la complejidad del acceso a un elemento por índice?</div>
+    <div class="quiz-options" data-q="1">
+      <button class="quiz-opt" data-correct="false" onclick="answer(this, false, 'No. El recorrido secuencial es O(N); el acceso por índice es más rápido.')">
+        <span class="letter">A.</span> O(N)
+      </button>
+      <button class="quiz-opt" data-correct="true" onclick="answer(this, true, 'Correcto: dir(aᵢ) = base + i×tamaño, en tiempo constante.')">
+        <span class="letter">B.</span> O(1)
+      </button>
+      <button class="quiz-opt" data-correct="false" onclick="answer(this, false, 'No. O(log N) es búsqueda binaria, no acceso por índice.')">
+        <span class="letter">C.</span> O(log N)
+      </button>
+      <button class="quiz-opt" data-correct="false" onclick="answer(this, false, 'No. O(N²) aparece en algoritmos como burbuja.')">
+        <span class="letter">D.</span> O(N²)
+      </button>
+    </div>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q"><span class="n">Q2.</span> En una clase que encapsula un arreglo, ¿por qué el arreglo debe ser privado?</div>
+    <div class="quiz-options" data-q="2">
+      <button class="quiz-opt" data-correct="false" onclick="answer(this, false, 'No. La privacidad no tiene que ver con velocidad sino con integridad y diseño.')">
+        <span class="letter">A.</span> Para que la JVM lo ejecute más rápido
+      </button>
+      <button class="quiz-opt" data-correct="true" onclick="answer(this, true, 'Exacto: para garantizar que solo los métodos de la clase puedan modificarlo y preservar sus invariantes.')">
+        <span class="letter">B.</span> Para preservar las invariantes de la clase
+      </button>
+      <button class="quiz-opt" data-correct="false" onclick="answer(this, false, 'No. Los arreglos no heredan; la relación es de composición.')">
+        <span class="letter">C.</span> Porque los arreglos no se pueden heredar
+      </button>
+      <button class="quiz-opt" data-correct="false" onclick="answer(this, false, 'No. El recolector funciona igual sea público o privado.')">
+        <span class="letter">D.</span> Para evitar fugas de memoria
+      </button>
+    </div>
+    <div class="quiz-feedback"></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q"><span class="n">Q3.</span> Si <code style="color:var(--yellow);">int[] a = new int[10];</code>, ¿qué índices son válidos?</div>
+    <div class="quiz-options" data-q="3">
+      <button class="quiz-opt" data-correct="false" onclick="answer(this, false, 'No. Incluir el 10 provocaría un ArrayIndexOutOfBoundsException.')">
+        <span class="letter">A.</span> 0 a 10
+      </button>
+      <button class="quiz-opt" data-correct="true" onclick="answer(this, true, 'Correcto. En Java los índices van de 0 a N-1.')">
+        <span class="letter">B.</span> 0 a 9
+      </button>
+      <button class="quiz-opt" data-correct="false" onclick="answer(this, false, 'No. El índice 0 es válido y apunta al primer elemento.')">
+        <span class="letter">C.</span> 1 a 10
+      </button>
+      <button class="quiz-opt" data-correct="false" onclick="answer(this, false, 'No. El rango no comienza en 1 en lenguajes indexados desde cero.')">
+        <span class="letter">D.</span> 1 a 9
+      </button>
+    </div>
+    <div class="quiz-feedback"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="sig">// ARRAYS.exe // CYBER ACADEMIA //</div>
+  <div>Fundamentos · Memoria · Operaciones · Encapsulamiento POO</div>
+  <div style="margin-top:8px;opacity:0.6;">&gt; Fin de la transmisión <span class="blink">█</span></div>
+</footer>
+
+<script>
+/* ============================================
+   MOUSE GLOW
+============================================ */
+const glow = document.getElementById('mouse-glow');
+document.addEventListener('mousemove', (e) => {
+  glow.style.left = e.clientX + 'px';
+  glow.style.top = e.clientY + 'px';
+});
+
+/* ============================================
+   PROGRESS BAR
+============================================ */
+const progress = document.getElementById('progress-bar');
+window.addEventListener('scroll', () => {
+  const p = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  progress.style.width = p + '%';
+});
+
+/* ============================================
+   REVEAL ON SCROLL
+============================================ */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+/* ============================================
+   MEMORY VISUALIZER
+============================================ */
+const BASE = 0x7FFE0000;
+const SIZE = 4;
+const memoryValues = [10, 22, 5, 88, 42, 7, 33, 91, 16, 64];
+const memArray = document.getElementById('mem-array');
+const memReadout = document.getElementById('mem-readout');
+
+function hex(n) {
+  return '0x' + n.toString(16).toUpperCase().padStart(8, '0');
+}
+
+memoryValues.forEach((val, i) => {
+  const cell = document.createElement('div');
+  cell.className = 'mem-cell';
+  const addr = BASE + i * SIZE;
+  cell.innerHTML = `
+    <span class="idx">${i}</span>
+    <span class="val">${val}</span>
+    <span class="addr">${hex(addr).slice(-6)}</span>
+  `;
+  cell.addEventListener('mouseenter', () => {
+    document.querySelectorAll('.mem-cell.active').forEach(c => c.classList.remove('active'));
+    cell.classList.add('active');
+    memReadout.innerHTML = `
+      <span class="k">›</span> elementos[<span class="v">${i}</span>]
+      &nbsp;=&nbsp; <span class="v">${val}</span>
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      dir = base + <span class="v">${i}</span> × 4
+      &nbsp;=&nbsp; <span class="v">${hex(addr)}</span>
+    `;
+  });
+  memArray.appendChild(cell);
+});
+
+memArray.addEventListener('mouseleave', () => {
+  document.querySelectorAll('.mem-cell.active').forEach(c => c.classList.remove('active'));
+  memReadout.innerHTML = `<span class="k">›</span> Selecciona una celda para inspeccionar su dirección de memoria...`;
+});
+
+/* ============================================
+   OPERATIONS PLAYGROUND
+============================================ */
+let opsData = [3, 14, 27, 8, 41, 56];
+const opsDisplay = document.getElementById('ops-display');
+const opsLog = document.getElementById('ops-log');
+
+function opsRender(highlightIdx = -1) {
+  opsDisplay.innerHTML = '';
+  opsData.forEach((v, i) => {
+    const c = document.createElement('div');
+    c.className = 'ops-cell' + (i === highlightIdx ? ' highlight' : '');
+    c.setAttribute('data-idx', i);
+    c.textContent = v;
+    opsDisplay.appendChild(c);
+  });
+}
+
+function logOps(msg, type = 'info') {
+  const d = document.createElement('div');
+  d.className = 'entry ' + type;
+  d.textContent = msg;
+  opsLog.appendChild(d);
+  opsLog.scrollTop = opsLog.scrollHeight;
+}
+
+function opsAppend() {
+  const v = document.getElementById('ops-value').value;
+  if (v === '') return;
+  opsData.push(Number(v));
+  opsRender(opsData.length - 1);
+  logOps(`agregar(${v}) → OK. Nueva longitud: ${opsData.length}`, 'ok');
+}
+
+function opsPop() {
+  if (opsData.length === 0) {
+    logOps('quitar() → ERROR: arreglo vacío', 'err');
+    return;
+  }
+  const v = opsData.pop();
+  opsRender();
+  logOps(`quitar() → ${v} eliminado. Longitud: ${opsData.length}`, 'ok');
+}
+
+function opsRandom() {
+  opsData = Array.from({ length: 6 }, () => Math.floor(Math.random() * 100));
+  opsRender();
+  logOps('random() → arreglo regenerado', 'info');
+}
+
+function opsReset() {
+  opsData = [3, 14, 27, 8, 41, 56];
+  opsRender();
+  logOps('reset() → estado inicial restaurado', 'info');
+}
+
+opsRender();
+
+/* ============================================
+   LABORATORIO — Coleccion<T>
+============================================ */
+const labState = {
+  elementos: new Array(4).fill(null),
+  cantidad: 0
+};
+
+const labArray = document.getElementById('lab-array');
+const labCantidad = document.getElementById('lab-cantidad');
+const labCapacidad = document.getElementById('lab-capacidad');
+const labInvariante = document.getElementById('lab-invariante');
+const labLog = document.getElementById('lab-log');
+
+function labRender(newIdx = -1) {
+  labArray.innerHTML = '';
+  labState.elementos.forEach((v, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'lab-cell' + (v !== null ? ' occupied' : '') + (i === newIdx ? ' new-cell' : '');
+    cell.setAttribute('data-idx', i);
+    cell.textContent = v === null ? '—' : v;
+    labArray.appendChild(cell);
+  });
+  labCantidad.textContent = labState.cantidad;
+  labCapacidad.textContent = labState.elementos.length;
+  labInvariante.textContent = `0 ≤ ${labState.cantidad} ≤ ${labState.elementos.length} ✓`;
+}
+
+function logLab(msg, type = 'info') {
+  const d = document.createElement('div');
+  d.className = 'entry ' + type;
+  d.textContent = msg;
+  labLog.appendChild(d);
+  labLog.scrollTop = labLog.scrollHeight;
+}
+
+function labAdd() {
+  const raw = document.getElementById('lab-value').value;
+  if (raw === '') return;
+  const v = Number(raw);
+
+  if (labState.cantidad === labState.elementos.length) {
+    logLab(`agregar(${v}): ¡lleno! → redimensionar() [${labState.elementos.length} → ${labState.elementos.length * 2}]`, 'info');
+    const nuevo = new Array(labState.elementos.length * 2).fill(null);
+    for (let i = 0; i < labState.cantidad; i++) nuevo[i] = labState.elementos[i];
+    labState.elementos = nuevo;
+  }
+
+  labState.elementos[labState.cantidad] = v;
+  labState.cantidad++;
+  labRender(labState.cantidad - 1);
+  logLab(`agregar(${v}) → OK. cantidad = ${labState.cantidad}`, 'ok');
+}
+
+function labObtener() {
+  const idx = Number(document.getElementById('lab-idx').value);
+  if (idx < 0 || idx >= labState.cantidad) {
+    logLab(`obtener(${idx}) → IndexOutOfBoundsException: índice fuera de rango [0, ${labState.cantidad - 1}]`, 'err');
+    return;
+  }
+  logLab(`obtener(${idx}) → ${labState.elementos[idx]}`, 'ok');
+}
+
+function labReset() {
+  labState.elementos = new Array(4).fill(null);
+  labState.cantidad = 0;
+  labRender();
+  logLab('reset() → Coleccion reiniciada', 'info');
+}
+
+labRender();
+
+/* ============================================
+   QUIZ
+============================================ */
+function answer(btn, correct, feedback) {
+  const card = btn.closest('.quiz-card');
+  const opts = card.querySelectorAll('.quiz-opt');
+  opts.forEach(o => o.disabled = true);
+
+  btn.classList.add(correct ? 'correct' : 'incorrect');
+
+  const fb = card.querySelector('.quiz-feedback');
+  fb.classList.add('show', correct ? 'ok' : 'ko');
+  fb.textContent = (correct ? '✓ ' : '✗ ') + feedback;
+
+  if (!correct) {
+    opts.forEach(o => {
+      if (o.dataset.correct === 'true') o.classList.add('correct');
+    });
+  }
+}
+</script>
+</body>
+</html>
