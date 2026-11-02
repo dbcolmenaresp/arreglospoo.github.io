@@ -3,6 +3,8 @@ Implementación y uso de arreglos con programación orientada a objetos
 
 https://dbcolmenaresp.github.io/arreglospoo.github.io/arreglospoo.html
 
+https://dbcolmenaresp.github.io/arreglospoo.github.io/arreglospoo2.html
+
 Clase Teórica: Arreglos y su Implementación con Programación Orientada a Objetos
 
 Asignatura: Programación / Estructuras de Datos
